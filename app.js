@@ -1,36 +1,99 @@
 const express = require('express');
 const mysql = require('mysql');
+const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
+require('dotenv').config();
+
+const allowedOrigins = ['http://localhost:4200'];
 
 const app = express();
+app.use(bodyParser.json());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // permette le richieste provenienti da origini specifiche
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Origin non permesso dal CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
+
 
 // Configurazione del database
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'Password',
-  database: 'PoCBackEnd'
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 });
 
 // Connessione al database
-connection.connect((error) => {
-  if (error) {
-    console.error('Errore di connessione al database: ' + error.stack);
+connection.connect((err) => {
+  if (err) {
+    console.error('Errore di connessione al database: ' + err.stack);
     return;
   }
-  console.log('Connessione al database effettuata con successo');
-});
+  console.log('Connessione al database riuscita con ID connessione: ' + connection.threadId);
+  
+  // Controllo se la tabella 'users' è presente nel database
+  connection.query('SELECT 1 FROM users LIMIT 1', (error, results, fields) => {
+    if (error) {
+      console.error(error);
+      console.log('La tabella users non esiste. Creazione della tabella...');
+      
+      // Creazione della tabella 'users'
+      connection.query(`CREATE TABLE users (
+        id INT NOT NULL AUTO_INCREMENT,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        PRIMARY KEY (id)
+      )`, (error, results, fields) => {
+        if (error) {
+          console.error(error);
+          return;
+        }
+        console.log('La tabella users è stata creata con successo');
+      });
 
+      connection.query(`INSERT INTO users(name, email, password) VALUES("mario rossi", "mario.rossi@gmmail.com", "Password1234")`, (error, results, fields) => {
+        if (error) {
+          console.error(error);
+          return;
+        }
+        console.log('Utente Mario Rossi (mario.rossi@gmmail.com, Password1234) inserito con successo');
+      });
 
-// API RESTful per ottenere tutti i dati dalla tabella "users"
-app.get('/users', (req, res) => {
-  console.log(req);
-  const query = 'SELECT * FROM users';
-  connection.query(query, (error, results) => {
-    if (error) throw error;
-    res.json(results);
+    }
   });
 });
+
+// Autenticazione
+app.post('/auth', (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  //Controllo se l'username e la password sono presenti nel database
+  connection.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password], (error, results, fields) => {
+    if (error) {
+      console.error(error);
+      res.status(500).send('Errore interno del server');
+    } else if (results.length > 0) {
+      // Se l'utente è autenticato, genero un token di accesso
+      const token = jwt.sign({ email: email }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+      res.status(200).json({ token: token });
+    } else {
+      // Se l'utente non è autenticato, restituisco un errore
+      res.status(401).send('Credenziali non valide');
+    }
+  });
+});
+
 
 // Avvio del server
 const PORT = 3333;
