@@ -5,23 +5,13 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 require('dotenv').config();
 
-const allowedOrigins = ['http://localhost:4200'];
+const corsOptions = {
+  origin: /^http:\/\/localhost(:\d+)?$/
+};
 
 const app = express();
 app.use(bodyParser.json());
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // permette le richieste provenienti da origini specifiche
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Origin non permesso dal CORS'));
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
 
 
 // Configurazione del database
@@ -49,7 +39,7 @@ connection.connect((err) => {
       // Creazione della tabella 'users'
       connection.query(`CREATE TABLE users (
         id INT NOT NULL AUTO_INCREMENT,
-        name VARCHAR(255) NOT NULL,
+        username VARCHAR(255) NOT NULL,
         email VARCHAR(255) NOT NULL,
         password VARCHAR(255) NOT NULL,
         PRIMARY KEY (id)
@@ -61,12 +51,12 @@ connection.connect((err) => {
         console.log('La tabella users è stata creata con successo');
       });
 
-      connection.query(`INSERT INTO users(name, email, password) VALUES("mario rossi", "mario.rossi@gmmail.com", "Password1234")`, (error, results, fields) => {
+      connection.query(`INSERT INTO users(username, email, password) VALUES("mariossi", "mario.rossi@gmmail.com", "Password1234")`, (error, results, fields) => {
         if (error) {
           console.error(error);
           return;
-        }
-        console.log('Utente Mario Rossi (mario.rossi@gmmail.com, Password1234) inserito con successo');
+        } 
+        console.log('Utente Mario Rossi (mario.rossi@gmmail.com, Mariossi, Password1234) inserito con successo');
       });
 
     }
@@ -86,12 +76,13 @@ app.post('/auth', (req, res) => {
     } else if (results.length > 0) {
       // Se l'utente è autenticato, genero un token di accesso
       const token = jwt.sign({ email: email }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-      res.status(200).json({ token: token });
+      res.status(200).json({ token: token, email: results[0].email, userName: results[0].username });
     } else {
       // Se l'utente non è autenticato, restituisco un errore
       res.status(401).send('Credenziali non valide');
     }
   });
+
 });
 
 
@@ -99,4 +90,4 @@ app.post('/auth', (req, res) => {
 const PORT = 3333;
 app.listen(PORT, () => {
   console.log(`Server avviato sulla porta ${PORT}`);
-});
+}); 
