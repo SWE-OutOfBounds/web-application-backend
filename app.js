@@ -29,6 +29,23 @@ connection.connect((err) => {
     return;
   }
   console.log('Connessione al database riuscita con ID connessione: ' + connection.threadId);
+
+  connection.query('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = "PoCBackEnd"', (error, results, fields) => {
+    if (error) {
+      console.error(error);
+      return;
+    }
+    if (results.length === 0) {
+      console.log('Il database PoCBackEnd non esiste. Creazione del database...');
+      connection.query('CREATE DATABASE PoCBackEnd', (error, results, fields) => {
+        if (error) {
+          console.error(error);
+          return;
+        }
+        console.log('Il database PoCBackEnd è stato creato con successo');
+      });
+    }
+  });
   
   // Controllo se la tabella 'users' è presente nel database
   connection.query('SELECT 1 FROM users LIMIT 1', (error, results, fields) => {
