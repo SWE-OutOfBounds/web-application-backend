@@ -3,11 +3,11 @@
  *
  * @param {*} secret - Chiave segreta da controllare
  */
-export function passwordValidator(string){
+function passwordValidator(string){
     const regex = /^(?=.?[A-Z])(?=.?[a-z]).{8,}$/i;
     return regex.test(string);
 }
-export function checkSecretKey(req, res, next) {
+function checkSecretKey(req, res, next) {
     const secretKey = req.headers['x-secret-key']; // La secret key è passata nell'header della richiesta HTTP
   
     // Eseguo una query per verificare se la secret key è presente nel database
@@ -26,7 +26,7 @@ export function checkSecretKey(req, res, next) {
       next();
     });
   }
-  export function captchaValidator(req, res, next){
+  function captchaValidator(req, res, next){
     //TODO
     next();
   }
