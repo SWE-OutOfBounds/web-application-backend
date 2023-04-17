@@ -44,7 +44,7 @@ connection.connect((err) => {
   console.log('Connessione al database riuscita con ID connessione: ' + connection.threadId);
 
   // Controllo se la tabella 'users' è presente nel database
-  connection.query('SELECT 1 FROM users LIMIT 1', functions.checkSecretKey, (error, results, fields) => {
+  connection.query('SELECT 1 FROM users LIMIT 1', (error, results, fields) => {
     if (error) {
       console.log('La tabella users non esiste. Creazione della tabella...');
 
