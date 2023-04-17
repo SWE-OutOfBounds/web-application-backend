@@ -1,4 +1,5 @@
-const functions = require('./scripts');
+const toolbox = require('./toolbox');
+require('dotenv').config();
 
 const express = require('express');
 const mysql = require('mysql');
@@ -6,7 +7,6 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const validator = require('validator');
-require('dotenv').config();
 
 const corsOptions = {
   origin: /^http:\/\/localhost(:\d+)?$/
@@ -44,7 +44,7 @@ connection.connect((err) => {
   console.log('Connessione al database riuscita con ID connessione: ' + connection.threadId);
 
   // Controllo se la tabella 'users' è presente nel database
-  connection.query('SELECT 1 FROM users LIMIT 1', functions.checkSecretKey, (error, results, fields) => {
+  connection.query('SELECT 1 FROM users LIMIT 1', (error, results, fields) => {
     if (error) {
       console.log('La tabella users non esiste. Creazione della tabella...');
 
@@ -67,7 +67,7 @@ connection.connect((err) => {
         if (error) {
           console.error(error);
           return;
-        } 
+        }
         console.log('Utente Mario Rossi (mario.rossi@gmmail.com, Mariossi, Password1234) inserito con successo');
       });
     }
@@ -75,14 +75,14 @@ connection.connect((err) => {
 
   // controllo se la tabella 'applications' è presente nel database
   connection.query('SELECT 1 FROM applications LIMIT 1', (error, results, fields) => {
-    if(error) {
+    if (error) {
       console.log('La tabella applications non esiste. Creazione della tabella...');
 
       // Creazione della tabella 'applications'
       connection.query(`CREATE TABLE applications (secretKey VARCHAR(255), host VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY (secretKey))`, (error, results, fields) => {
         if (error) {
           console.error(error);
-         return;
+          return;
         }
         console.log('La tabella applications è stata creata con successo');
       });
@@ -91,7 +91,7 @@ connection.connect((err) => {
         if (error) {
           console.error(error);
           return;
-        } 
+        }
         console.log('Applicazione WebApp (https://localhost) inserito con successo');
       });
     }
@@ -118,7 +118,7 @@ function checkSecretKey(req, res, next) {
   });
 }
 
-function captchaValidator(req, res, next){
+function captchaValidator(req, res, next) {
   //TODO
   next();
 }
@@ -151,13 +151,13 @@ app.post('/auth', [checkSecretKey, captchaValidator], (req, res) => {
 
       // Se l'utente è autenticato, genero un token di sessione
       const sessionData = {
-        email : results[0].email,
-        username : results[0].username
+        email: results[0].email,
+        username: results[0].username
       }
 
-      const token = jwt.sign( SessionInfo, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+      const token = jwt.sign(SessionInfo, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
 
-      res.cookie('tkn', token, { httpOnly: true});
+      res.cookie('tkn', token, { httpOnly: true });
       res.status(200).send('Sessione aperta.');
 
     } else {
@@ -180,45 +180,45 @@ app.post('/auth', [checkSecretKey, captchaValidator], (req, res) => {
  *                      401 - Sessione scaduta,
  *                      403 - Non autorizzato (checkSecretKey).
  */
-app.get('/sessionRecovery', checkSecretKey, (req, res)=>{
-    const secretKey = req.headers['x-secret-key'];
+app.get('/sessionRecovery', checkSecretKey, (req, res) => {
+  const secretKey = req.headers['x-secret-key'];
 
-    const token = req.cookies.sessionToken;
+  const token = req.cookies.sessionToken;
 
-    //Controllo l'esistenza del cookie
-    if(req.cookies && req.cookie.sessionToken){
+  //Controllo l'esistenza del cookie
+  if (req.cookies && req.cookie.sessionToken) {
 
-      try{
-        // Recupero i dati della sessione 
-        const sessionData = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    try {
+      // Recupero i dati della sessione 
+      const sessionData = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-        if(sessionData.expiresAt < new Date()){
-          throw new Error('Sessione scaduta.');
-        }else{
-          //token valido
-          const SessionInfo = {
-            email : sessionData.email,
-            username : sessionData.username
-          }
-
-          res.status(200).json(sessionData);
-        }
-      }catch (err){
-
-        //Distinguo tra token non valido e token scaduto
-        if (err instanceof jwt.JsonWebTokenError) {
-          //Token non valido
-          res.status(401).send('Sessione non valida.');
-        } else {
-          //Token scaduto
-          res.status(401).send('Sessione scaduta.');
+      if (sessionData.expiresAt < new Date()) {
+        throw new Error('Sessione scaduta.');
+      } else {
+        //token valido
+        const SessionInfo = {
+          email: sessionData.email,
+          username: sessionData.username
         }
 
+        res.status(200).json(sessionData);
+      }
+    } catch (err) {
+
+      //Distinguo tra token non valido e token scaduto
+      if (err instanceof jwt.JsonWebTokenError) {
+        //Token non valido
+        res.status(401).send('Sessione non valida.');
+      } else {
+        //Token scaduto
+        res.status(401).send('Sessione scaduta.');
       }
 
-    }else{
-      res.status(401).send('Sessione non valida.');
     }
+
+  } else {
+    res.status(401).send('Sessione non valida.');
+  }
 
 });
 
@@ -249,7 +249,7 @@ app.post("/createUser",[checkSecretKey, captchaValidator], (req, res) => {
 
   //Controllo i dati forniti dall'utente e, se non sono corretti, invio un errore all'utente 
   if(firstName == "" || lastName == "" || username == "" || 
-  validator.isEmail(email) == false || passwordValidator(password) == false) {
+  validator.isEmail(email) == false || toolbox.passwordValidator(password) == false) {
     res.status(400).send('Credenziali non valide. Riprova.');
     return;
   }
