@@ -263,7 +263,7 @@ app.post("/createUser", [checkSecretKey, captchaValidator], (req, res) => {
   //Controllo i dati forniti dall'utente e, se non sono corretti, invio un errore all'utente 
   if (firstName == "" || lastName == "" || username == "" ||
     validator.isEmail(email) == false || passwordValidator(password) == false) {
-    res.status(400).send('Credenziali non valide. Riprova.');
+    res.status(401).send('Credenziali non valide. Riprova.');
     return;
   }
 
@@ -276,10 +276,17 @@ app.post("/createUser", [checkSecretKey, captchaValidator], (req, res) => {
       //Se esiste una riga nel database con l'email scritta scritta dall'utente
       //l'email è già in uso per un diverso account e restituisco un errore
       res.status(400).send('Email in uso.');
+    } else {
+      //se l'email non è già in uso, push del nuovo utente nel database
+      connection.query(`INSERT INTO users(username, email, password) VALUES(?, ?, ?)`, [username, email, password], (error, results, fields) => {
+        if (error) {
+          console.error(error);
+          return;
+        }
+        res.status(200).send('Utente inserito con successo.');
+      });
     }
   })
-
-
 });
 
 module.exports = app;
