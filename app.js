@@ -67,7 +67,7 @@ connection.connect((err) => {
         if (error) {
           console.error(error);
           return;
-        } 
+        }
         console.log('Utente Mario Rossi (mario.rossi@gmmail.com, Mariossi, Password1234) inserito con successo');
       });
     }
@@ -75,14 +75,14 @@ connection.connect((err) => {
 
   // controllo se la tabella 'applications' è presente nel database
   connection.query('SELECT 1 FROM applications LIMIT 1', (error, results, fields) => {
-    if(error) {
+    if (error) {
       console.log('La tabella applications non esiste. Creazione della tabella...');
 
       // Creazione della tabella 'applications'
       connection.query(`CREATE TABLE applications (secretKey VARCHAR(255), host VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY (secretKey))`, (error, results, fields) => {
         if (error) {
           console.error(error);
-         return;
+          return;
         }
         console.log('La tabella applications è stata creata con successo');
       });
@@ -91,26 +91,28 @@ connection.connect((err) => {
         if (error) {
           console.error(error);
           return;
-        } 
+        }
         console.log('Applicazione WebApp (https://localhost) inserito con successo');
       });
     }
   })
 });
 
+
 function checkSecretKey(req, res, next) {
   const secretKey = req.headers['x-secret-key']; // La secret key è passata nell'header della richiesta HTTP
 
   // Eseguo una query per verificare se la secret key è presente nel database
-  pool.query('SELECT * FROM Applications WHERE key = ?', [secretKey], (error, results, fields) => {
+  pool.query('SELECT * FROM applications WHERE secretKey = ?', [secretKey], (error, results, fields) => {
     if (error) {
       // Gestione dell'errore di connessione al database
-      return res.status(500).send("Errore interno al server.");
+      console.log(error);
+      return res.status(500).json({ message: "Errore interno al server." });
     }
 
     if (results.length === 0) {
       // La secret key non è presente nel database
-      return res.status(403).send("Non autorizzato.");
+      return res.status(403).json({ message: "Applicazione non autorizzata." });
     }
 
     // La secret key è presente nel database, passo al middleware successivo
@@ -118,7 +120,7 @@ function checkSecretKey(req, res, next) {
   });
 }
 
-function captchaValidator(req, res, next){
+function captchaValidator(req, res, next) {
   //TODO
   next();
 }
@@ -151,13 +153,13 @@ app.post('/auth', [checkSecretKey, captchaValidator], (req, res) => {
 
       // Se l'utente è autenticato, genero un token di sessione
       const sessionData = {
-        email : results[0].email,
-        username : results[0].username
+        email: results[0].email,
+        username: results[0].username
       }
 
-      const token = jwt.sign( SessionInfo, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+      const token = jwt.sign(SessionInfo, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
 
-      res.cookie('tkn', token, { httpOnly: true});
+      res.cookie('tkn', token, { httpOnly: true });
       res.status(200).send('Sessione aperta.');
 
     } else {
@@ -179,47 +181,58 @@ app.post('/auth', [checkSecretKey, captchaValidator], (req, res) => {
  *                      401 - Sessione non valida,
  *                      401 - Sessione scaduta,
  *                      403 - Non autorizzato (checkSecretKey).
- */
-app.get('/sessionRecovery', checkSecretKey, (req, res)=>{
-    const secretKey = req.headers['x-secret-key'];
+*/
+app.get('/SessionRecovery', checkSecretKey, (req, res) => {
+  const cookies = req.headers.cookie?.split(";");
 
-    const token = req.cookies.sessionToken;
+  if (cookies) {
+
+    var token = "";
+
+    cookies.forEach(element => {
+      let array = element.split('=');
+      var name = array[0];
+      console.log(name);
+      if (name == 'sessionToken') {
+        let i = 1;
+        console.log(array.length);
+        while (i < array.length) {
+          token += array[i];
+          if (i + 1 < array.length) token += "=";
+          i++;
+        }
+      }
+    });
+
+    const expected = { email: "abc@def.ghi", username: "abcdefghi" };
+    const tolkien = jwt.sign(expected, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+    console.log(tolkien);
 
     //Controllo l'esistenza del cookie
-    if(req.cookies && req.cookie.sessionToken){
+    if (token != '') {
 
-      try{
-        // Recupero i dati della sessione 
-        const sessionData = jwt.verify(token, process.env.JWT_SECRET_KEY);
-
-        if(sessionData.expiresAt < new Date()){
-          throw new Error('Sessione scaduta.');
-        }else{
-          //token valido
-          const SessionInfo = {
-            email : sessionData.email,
-            username : sessionData.username
+      // Recupero i dati della sessione 
+      jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+        if (decoded) {
+          console.log(Math.floor(Date.now() / 1000));
+          console.log(decoded.exp);
+          if (decoded.exp > Math.floor(Date.now() / 1000)) {
+            const sessionData = {
+              email: decoded.email,
+              username: decoded.username
+            }
+            res.status(200).json(sessionData);
+          } else {
+            res.status(401).json({ message: 'Token scaduto.' });
           }
-
-          res.status(200).json(sessionData);
-        }
-      }catch (err){
-
-        //Distinguo tra token non valido e token scaduto
-        if (err instanceof jwt.JsonWebTokenError) {
-          //Token non valido
-          res.status(401).send('Sessione non valida.');
         } else {
-          //Token scaduto
-          res.status(401).send('Sessione scaduta.');
+          res.status(401).json({ message: "Token non valido." });
         }
-
-      }
-
-    }else{
-      res.status(401).send('Sessione non valida.');
-    }
-
+      });
+    } else
+      res.status(404).json({ message: 'Token non esistente.' });
+  } else
+    res.status(404).json({ message: 'Token non esistente.' });
 });
 
 /**
@@ -240,7 +253,7 @@ app.get('/sessionRecovery', checkSecretKey, (req, res)=>{
  *                      403 - Non autorizzato (checkSecretKey),
  *                      403 - Bad CAPTCHA (captchaValidator).
  */
-app.post("/createUser",[checkSecretKey, captchaValidator], (req, res) => {
+app.post("/createUser", [checkSecretKey, captchaValidator], (req, res) => {
   const firstName = req.body.firstName;
   const lastName = req.body.lastName;
   const username = req.body.username;
@@ -248,15 +261,15 @@ app.post("/createUser",[checkSecretKey, captchaValidator], (req, res) => {
   const password = req.body.password;
 
   //Controllo i dati forniti dall'utente e, se non sono corretti, invio un errore all'utente 
-  if(firstName == "" || lastName == "" || username == "" || 
-  validator.isEmail(email) == false || passwordValidator(password) == false) {
+  if (firstName == "" || lastName == "" || username == "" ||
+    validator.isEmail(email) == false || passwordValidator(password) == false) {
     res.status(400).send('Credenziali non valide. Riprova.');
     return;
   }
 
   //Controllo se l'email è già in uso nel database
   connection.query('SELECT * FROM users WHERE email = ?', [email], (error, results, fields) => {
-    if(error) {
+    if (error) {
       console.error(error);
       res.status(500).send('Errore interno del server');
     } else if (results.length > 0) {
@@ -269,9 +282,4 @@ app.post("/createUser",[checkSecretKey, captchaValidator], (req, res) => {
 
 });
 
-
-// Avvio del server
-const PORT = 3333;
-app.listen(PORT, () => {
-  console.log(`Server avviato sulla porta ${PORT}`);
-});
+module.exports = app;
