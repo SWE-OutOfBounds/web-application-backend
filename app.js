@@ -1,6 +1,8 @@
 require('dotenv').config();
 const toolbox = require('./toolbox');
 
+const Canvas = require('canvas');
+
 const express = require('express');
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
@@ -8,8 +10,10 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const validator = require('validator');
 
+const clockCAPTCHA = require('../clock-captcha/dist/index')
+
 const corsOptions = {
-  origin: /^http:\/\/localhost(:\d+)?$/
+  origin: 'http://localhost:43157'
 };
 
 const app = express();
@@ -204,10 +208,6 @@ app.get('/SessionRecovery', checkSecretKey, (req, res) => {
       }
     });
 
-    const expected = { email: "abc@def.ghi", username: "abcdefghi" };
-    const tolkien = jwt.sign(expected, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-    console.log(tolkien);
-
     //Controllo l'esistenza del cookie
     if (token != '') {
 
@@ -280,6 +280,14 @@ app.post("/createUser", [checkSecretKey, captchaValidator], (req, res) => {
   })
 
 
+});
+
+app.get("/clockCAPTCHA/new", (req, res) => {
+  var captchaGenerator = new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW);
+  res.status(200).json({
+    canvas_content : captchaGenerator.getCanvasContent(),
+    token : captchaGenerator.getToken()
+  })
 });
 
 module.exports = app;
