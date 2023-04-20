@@ -1,8 +1,6 @@
 require('dotenv').config();
 const toolbox = require('./toolbox');
 
-const Canvas = require('canvas');
-
 const express = require('express');
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
@@ -32,68 +30,59 @@ const pool = mysql.createPool({
 });
 
 
-// // Connessione al database
-// connection.connect((err) => {
-//   if (err) {
-//     console.error('Errore di connessione al database: ' + err.stack);
-//     return;
-//   }
-//   console.log('Connessione al database riuscita con ID connessione: ' + connection.threadId);
+// Controllo se la tabella 'users' è presente nel database
+pool.query('SELECT 1 FROM users LIMIT 1', (error, results, fields) => {
+  if (error) {
+    console.log('La tabella users non esiste. Creazione della tabella...');
 
-//   // Controllo se la tabella 'users' è presente nel database
-//   connection.query('SELECT 1 FROM users LIMIT 1', (error, results, fields) => {
-//     if (error) {
-//       console.log('La tabella users non esiste. Creazione della tabella...');
+    // Creazione della tabella 'users'
+    pool.query(`CREATE TABLE users (
+        id INT NOT NULL AUTO_INCREMENT,
+        username VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        PRIMARY KEY (id)
+      )`, (error, results, fields) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
+      console.log('La tabella users è stata creata con successo');
+    });
 
-//       // Creazione della tabella 'users'
-//       connection.query(`CREATE TABLE users (
-//         id INT NOT NULL AUTO_INCREMENT,
-//         username VARCHAR(255) NOT NULL,
-//         email VARCHAR(255) NOT NULL,
-//         password VARCHAR(255) NOT NULL,
-//         PRIMARY KEY (id)
-//       )`, (error, results, fields) => {
-//         if (error) {
-//           console.error(error);
-//           return;
-//         }
-//         console.log('La tabella users è stata creata con successo');
-//       });
+    pool.query(`INSERT INTO users(username, email, password) VALUES("mariossi", "mario.rossi@gmmail.com", "Password1234")`, (error, results, fields) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
+      console.log('Utente Mario Rossi (mario.rossi@gmmail.com, Mariossi, Password1234) inserito con successo');
+    });
+  }
+});
 
-//       connection.query(`INSERT INTO users(username, email, password) VALUES("mariossi", "mario.rossi@gmmail.com", "Password1234")`, (error, results, fields) => {
-//         if (error) {
-//           console.error(error);
-//           return;
-//         }
-//         console.log('Utente Mario Rossi (mario.rossi@gmmail.com, Mariossi, Password1234) inserito con successo');
-//       });
-//     }
-//   });
+// controllo se la tabella 'applications' è presente nel database
+pool.query('SELECT 1 FROM applications LIMIT 1', (error, results, fields) => {
+  if (error) {
+    console.log('La tabella applications non esiste. Creazione della tabella...');
 
-//   // controllo se la tabella 'applications' è presente nel database
-//   connection.query('SELECT 1 FROM applications LIMIT 1', (error, results, fields) => {
-//     if (error) {
-//       console.log('La tabella applications non esiste. Creazione della tabella...');
+    // Creazione della tabella 'applications'
+    pool.query(`CREATE TABLE applications (secretKey VARCHAR(255), host VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY (secretKey))`, (error, results, fields) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
+      console.log('La tabella applications è stata creata con successo');
+    });
 
-//       // Creazione della tabella 'applications'
-//       connection.query(`CREATE TABLE applications (secretKey VARCHAR(255), host VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY (secretKey))`, (error, results, fields) => {
-//         if (error) {
-//           console.error(error);
-//           return;
-//         }
-//         console.log('La tabella applications è stata creata con successo');
-//       });
-
-//       connection.query(`INSERT INTO applications(secretKey, host, name) VALUES("LQbHd5h334ciuy7", "https://localhost", "WebApp")`, (error, results, fields) => {
-//         if (error) {
-//           console.error(error);
-//           return;
-//         }
-//         console.log('Applicazione WebApp (https://localhost) inserito con successo');
-//       });
-//     }
-//   })
-// });
+    pool.query(`INSERT INTO applications(secretKey, host, name) VALUES("LQbHd5h334ciuy7", "https://localhost", "WebApp")`, (error, results, fields) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
+      console.log('Applicazione WebApp (https://localhost) inserito con successo');
+    });
+  }
+})
 
 
 function checkSecretKey(req, res, next) {
@@ -394,7 +383,7 @@ app.post("/user", [checkSecretKey, captchaValidator], (req, res) => {
             res.status(500).send('Database error.');
           } else {
             //Utente inserito nel database
-            
+
             res.status(201);
           }
         })
