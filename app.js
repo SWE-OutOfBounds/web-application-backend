@@ -11,7 +11,6 @@ const validator = require('validator');
 const clockCAPTCHA = require('../clock-captcha/dist/index')
 
 const corsOptions = {
-  origin: 'http://localhost:43157'
 };
 
 const app = express();
@@ -396,7 +395,8 @@ app.post("/user", [checkSecretKey, captchaValidator], (req, res) => {
 });
 
 app.get("/clockCAPTCHA/new", (req, res) => {
-  var captchaGenerator = new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW);
+  var captchaGenerator = new clockCAPTCHA.ShapesDecorator(new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW), 15);
+  console.log(res.socket.remoteAddress);
   res.status(200).json({
     canvas_content: captchaGenerator.getCanvasContent(),
     token: captchaGenerator.getToken()
