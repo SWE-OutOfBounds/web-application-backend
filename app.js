@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const validator = require('validator');
 
-const clockCAPTCHA = require('../clock-captcha/dist/index')
+const clockCAPTCHA = require('../clock-captcha/dist/index');
 
 const corsOptions = {
 };
@@ -395,10 +395,10 @@ app.post("/user", [checkSecretKey, captchaValidator], (req, res) => {
 });
 
 app.get("/clockCAPTCHA/new", (req, res) => {
-  var captchaGenerator = new clockCAPTCHA.ShapesDecorator(new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW), 15);
+  var captchaGenerator = new clockCAPTCHA.ShapesDecorator(new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW), 5);
   console.log(res.socket.remoteAddress);
   res.status(200).json({
-    canvas_content: captchaGenerator.getCanvasContent(),
+    canvas_content: captchaGenerator.getImage(),
     token: captchaGenerator.getToken()
   })
 });
