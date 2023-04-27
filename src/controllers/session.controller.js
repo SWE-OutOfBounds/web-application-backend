@@ -1,10 +1,19 @@
 const pool = require('../configs/db.config');
+const validator = require('validator');
+const toolbox = require('../utils/toolbox');
+const jwt = require('jsonwebtoken');
+
 module.exports = {
     open: (req, res) => {
         const email = req.body.email;
         const password = req.body.password;
 
-        if (email != "" && password != "" && validator.email(isEmail) && toolbox.passwordValidator(password)) {
+        console.log(email);
+        console.log(password);
+        console.log(validator.isEmail(email));
+        console.log(toolbox.passwordValidator(password));
+
+        if (email != "" && password != "" && validator.isEmail(email) && toolbox.passwordValidator(password)) {
 
             //Controllo se l'username e la password sono presenti nel database
             pool.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password], (error, results, fields) => {
@@ -22,7 +31,7 @@ module.exports = {
                     const token = jwt.sign(sessionData, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
 
                     //Inserisco il token di sessione nel database
-                    pool.query('INSERT INTO sessions(IP, opening, token, email) VALUES(?, ?, ?, ?)', [req.socket.remoteAddress, Math.floor(Date.now() / 1000), token, email], (error, result, fields) => {
+                    pool.query('INSERT INTO sessions(IP, opening, token, user_email) VALUES(?, ?, ?, ?)', [req.socket.remoteAddress, new Date().toLocaleString([['sv-SE']]), token, email], (error, result, fields) => {
                         if (error) {
                             console.error(error);
                             res.status(500).json({ details: "DATABASE_ERROR" });

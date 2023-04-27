@@ -27,6 +27,7 @@ module.exports = {
                                     return res.status(400).json({ details: "USED_TOKEN" })
                                 } else {
                                     //token non in blacklist
+                                    console.log('non in blacklist')
                                     connection.query("INSERT INTO BlackList(OTT, timestamp) VALUES(?, ?)", [token, new Date().toLocaleString([['sv-SE']])], (error, results, fields) => {
                                         connection.release();
                                         if (error) {
