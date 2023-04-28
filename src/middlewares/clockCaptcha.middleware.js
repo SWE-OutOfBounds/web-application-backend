@@ -3,7 +3,7 @@ const pool = require('../configs/db.config');
 const clockCAPTCHA = require('../../../clock-captcha/dist/index');
 
 module.exports = {
-    validate: (req, res) => {
+    validate: (req, res, next) => {
         var token = req.body.cc_token;
         var user_input = req.body.cc_input;
 
@@ -36,7 +36,7 @@ module.exports = {
                                         } else if (clockCAPTCHA.ClockCAPTCHAGenerator.verifyUserInput(token, process.env.CLOCK_CAPTCHA_PSW, user_input)) {
                                             //captcha risolto con successo
                                             console.log("Captcha risolto con successo");
-                                            res.sendStatus(200);
+                                            next();
                                         } else {
                                             //captcha risolto in modo errato
                                             return res.status(400).json({ details: "BAD_CAPTCHA" });
