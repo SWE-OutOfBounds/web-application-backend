@@ -30,26 +30,18 @@ module.exports = {
 
                     const token = jwt.sign(sessionData, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
 
-                    //Inserisco il token di sessione nel database
-                    pool.query('INSERT INTO sessions(IP, opening, token, user_email) VALUES(?, ?, ?, ?)', [req.socket.remoteAddress, new Date().toLocaleString([['sv-SE']]), token, email], (error, result, fields) => {
-                        if (error) {
-                            console.error(error);
-                            res.status(500).json({ details: "DATABASE_ERROR" });
-                        } else {
-                            //Ritorno il token di sessione
-                            res.status(200).json({ session_token: token });
-                        }
-                    })
+                    res.status(200).json({ session_token: token });
                 } else {
                     // Se l'utente non è registrato, restituisco un errore
-                    res.status(401).send('BAD_CREDENTIAL');
+                    res.status(401).json({ details: 'BAD_CREDENTIAL' });
                 }
             });
 
         } else {
-
-            res.status(400).send('INVALID_DATA');
-
+            if (validator.isEmail(email))
+                res.status(400).json({ details: 'INVALID_EMAIL_FORMAT' });
+            else
+                res.status(400).json({ details: 'INVALID_PASSWORD_DATA' });
         }
     },
 
