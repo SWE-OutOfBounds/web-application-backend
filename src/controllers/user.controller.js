@@ -1,3 +1,7 @@
+const pool = require('../configs/db.config');
+const validator = require('validator');
+const toolbox = require('../utils/toolbox');
+
 module.exports = {
     create: (req, res) => {
         const firstName = req.body.firstName;
@@ -7,7 +11,7 @@ module.exports = {
         const password = req.body.password;
 
         //Controllo i dati forniti dall'utente e, se non sono corretti, invio un errore all'utente 
-        if (firstName == "" || lastName == "" || username == "" || validator.isEmail(email) == false || passwordValidator(password) == false) {
+        if (firstName == "" || lastName == "" || username == "" || validator.isEmail(email) == false || toolbox.passwordValidator(password) == false) {
             //Formato dati non corretto
 
             res.status(400).send('Formato errato.');
@@ -32,7 +36,7 @@ module.exports = {
                         } else {
                             //Utente inserito nel database
 
-                            res.status(201);
+                            res.status(201).json('User created.');
                         }
                     })
                 }
