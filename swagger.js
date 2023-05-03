@@ -5,7 +5,7 @@ const doc = {
     title: 'Backend Structure',
     description: 'Description',
   },
-  host: 'localhost:3000/api',
+  host: 'localhost:3000',
   schemes: ['http'],
 };
 
