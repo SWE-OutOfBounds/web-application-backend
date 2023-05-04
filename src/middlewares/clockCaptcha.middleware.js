@@ -16,7 +16,7 @@ module.exports = {
                         //Token ancora valido
                         token = decoded.cc_token;
                         pool.getConnection((error, connection) => {
-                            connection.query("SELECT * FROM BlackList WHERE OTT = ?", [token], (error, results, fields) => {
+                            connection.query("SELECT * FROM blackList WHERE OTT = ?", [token], (error, results, fields) => {
                                 if (error) {
                                     connection.release();
                                     console.error(error);
@@ -28,7 +28,7 @@ module.exports = {
                                 } else {
                                     //token non in blacklist
                                     console.log('non in blacklist')
-                                    connection.query("INSERT INTO BlackList(OTT, timestamp) VALUES(?, ?)", [token, new Date().toLocaleString([['sv-SE']])], (error, results, fields) => {
+                                    connection.query("INSERT INTO blackList(OTT, used) VALUES(?, ?)", [token, new Date().toLocaleString([['sv-SE']])], (error, results, fields) => {
                                         connection.release();
                                         if (error) {
                                             console.error(error);

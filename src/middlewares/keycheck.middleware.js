@@ -7,7 +7,7 @@ module.exports = {
         if (secretKey) {
             // Eseguo una query per verificare se la secret key è presente nel database
             return pool.getConnection((err, connection) => {
-                connection.query('SELECT * FROM applications WHERE secretKey = ?', [secretKey], (error, results, fields) => {
+                connection.query('SELECT * FROM apikeys WHERE secretKey = ?', [secretKey], (error, results, fields) => {
                     connection.release();
                     if (error) {
                         // Gestione dell'errore di connessione al database
