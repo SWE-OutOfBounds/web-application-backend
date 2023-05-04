@@ -2,9 +2,8 @@ const request = require("supertest");
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-const app = require("../app");
+const app = require("../../app");
 const { JsonWebTokenError } = require("jsonwebtoken");
-const { describe } = require("node:test");
 
 describe("ClockCAPTCHA get endpoint", () => {
 
