@@ -7,14 +7,9 @@ module.exports = {
     open: (req, res) => {
         const email = req.body.email;
         const password = req.body.password;
-
-        console.log(email);
-        console.log(password);
-        console.log(validator.isEmail(email));
-        console.log(toolbox.passwordValidator(password));
-
-        if (email != "" && password != "" && validator.isEmail(email) && toolbox.passwordValidator(password)) {
-
+        
+        
+        if (email && password && email != "" && password != "" && validator.isEmail(email) && toolbox.passwordValidator(password)) {
             //Controllo se l'username e la password sono presenti nel database
             pool.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password], (error, results, fields) => {
                 if (error) {
@@ -38,10 +33,11 @@ module.exports = {
             });
 
         } else {
-            if (validator.isEmail(email))
+            if (!email || !validator.isEmail(email)){
                 res.status(400).json({ details: 'INVALID_EMAIL_FORMAT' });
+            }
             else
-                res.status(400).json({ details: 'INVALID_PASSWORD_DATA' });
+                res.status(400).json({ details: 'INVALID_PASSWORD_FORMAT' });
         }
     },
     recovery: (req, res) => {
@@ -67,22 +63,14 @@ module.exports = {
             if (token != '') {
                 //Token trovato nei cookies
 
-                // Recupero i dati della sessione 
-                jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
-                    if (decoded) {
-                        //token generato da questo database
-                        sessionData = {
-                            email : decoded.email,
-                            username : decoded.username
-                        }
-                        res.status(200).json(sessionData);
-                    } else {
-                        //Token non generato da questo backend
-
-                        res.status(400).json({ details: "INVALID_TOKEN" });
-                    }
-
-                });
+                
+                try{
+                    let decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+                    res.status(200).json({email:decoded.email, username: decoded.username});
+                }catch(error){
+                    if(error.name == "JsonWebTokenError") res.status(400).json({details : "INVALID_TOKEN"});
+                    if(error.name == "TokenExpiredError") res.status(400).json({details : "EXPIRED_TOKEN"});
+                }
 
             } else {
                 //Token non trovato nei cookies

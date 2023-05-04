@@ -7,10 +7,7 @@ module.exports = {
         var captchaGenerator = new clockCAPTCHA.NoiseDecorator(new clockCAPTCHA.ShapesDecorator(new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW), 4), 20);
         res.status(200).json({
             canvas_content: captchaGenerator.getImage(),
-            token: jwt.sign({ cc_token: captchaGenerator.getToken() }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' })
+            token: jwt.sign({ cc_token: captchaGenerator.getToken() }, process.env.JWT_SECRET_KEY, { expiresIn: '120s' })
         })
-    },
-    validate: (req, res) => {
-        res.sendStatus(200);
     }
 }
