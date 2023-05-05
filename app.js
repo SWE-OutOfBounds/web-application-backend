@@ -12,7 +12,7 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
-app.use(keyCheckMiddleware.checkSecretKey);
+// app.use(keyCheckMiddleware.checkSecretKey);
 
 app.use('/users', require('./src/routes/user'));
 app.use('/session', require('./src/routes/session'));
