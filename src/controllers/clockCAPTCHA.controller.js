@@ -1,13 +1,12 @@
-const clockCAPTCHA = require('../../../clock-captcha/dist/index');
+const cc = require('../../../clock-captcha/dist/index');
 const jwt = require('jsonwebtoken');
 const pool = require('../configs/db.config');
 
 module.exports = {
     generate: (req, res) => {
-        var captchaGenerator = new clockCAPTCHA.NoiseDecorator(new clockCAPTCHA.ShapesDecorator(new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW), 4), 20);
-        res.status(200).json({
-            canvas_content: captchaGenerator.getImage(),
-            token: jwt.sign({ cc_token: captchaGenerator.getToken() }, process.env.JWT_SECRET_KEY, { expiresIn: '120s' })
-        })
+        var generationStrategy = new cc.ShapesDecorator(new cc.HTMLCanvasGenerator(), 8);
+        var ImageGenerator = new cc.ClockImageGenerator(generationStrategy);
+        var toSendData = new cc.ClockCAPTCHA().generateData(process.env.CLOCK_CAPTCHA_PSW, ImageGenerator);
+        res.status(200).json(toSendData);
     }
 }
