@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const pool = require('../configs/db.config');
-const clockCAPTCHA = require('../../../clock-captcha/dist/index');
+const cc = require('../../../clock-captcha/dist/index');
 
 module.exports = {
     validate: (req, res, next) => {
@@ -29,7 +29,7 @@ module.exports = {
                                 if (error) {
                                     console.error(error);
                                     return res.status(500).json({ details: "DB_ERROR" });
-                                } else if (clockCAPTCHA.ClockCAPTCHAGenerator.verifyUserInput(token, process.env.CLOCK_CAPTCHA_PSW, user_input)) {
+                                } else if (cc.ClockCAPTCHA.validateData({token:token, input: user_input}, process.env.CLOCK_CAPTCHA_PSW)) {
                                     //captcha risolto con successo
                                     next();
                                 } else {

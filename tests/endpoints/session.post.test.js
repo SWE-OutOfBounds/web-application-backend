@@ -6,7 +6,7 @@ const crypto = require("crypto");
 
 const app = require("../../app");
 const { JsonWebTokenError } = require("jsonwebtoken");
-const clockCAPTCHA = require('../../../clock-captcha/dist/index');
+const cc = require('../../../clock-captcha/dist/index');
 
 describe("Richiesta senza secret key in header", () => {
 
@@ -116,8 +116,8 @@ describe("Secret key in header e in database", () => {
     })
     describe("ClockCAPTCHA: dati incorretti", () => {
         describe("Token scaduto", () => {
-            let captchaGenerator = new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW);
-            let token = jwt.sign({ cc_token: captchaGenerator.getToken() }, process.env.JWT_SECRET_KEY, { expiresIn: '1' });
+            let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
+            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '1' });
             it("JSON format", (done) => {
                 request(app)
                     .post("/session")
@@ -167,8 +167,8 @@ describe("Secret key in header e in database", () => {
 
         })
         describe("Captcha errato", () => {
-            let captchaGenerator = new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW);
-            let token = jwt.sign({ cc_token: captchaGenerator.getToken() }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+            let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
+            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
             //Brute forcing captcha result
             let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
@@ -196,19 +196,19 @@ describe("Secret key in header e in database", () => {
     describe("ClockCAPTCHA: dati corretti", () => {
         describe("Dati di accesso incoretti", () => {
             describe("Email assente", () => {
-                let captchaGenerator = new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW);
-                let token = jwt.sign({ cc_token: captchaGenerator.getToken() }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
+            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                 //Brute forcing captcha result
                 let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
                 while (!flag && hours < 12) {
                     minutes = 0;
                     while (!flag && minutes < 60) {
-                        flag = clockCAPTCHA.ClockCAPTCHAGenerator.verifyUserInput(captchaGenerator.getToken(), process.env.CLOCK_CAPTCHA_PSW, user_input);
-                        if(!flag)user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
-                        if(!flag)minutes++;
+                        flag = cc.ClockCAPTCHA.validateData({token: toSendData['token'], input: user_input}, process.env.CLOCK_CAPTCHA_PSW);
+                        if (!flag) user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
+                        if (!flag) minutes++;
                     }
-                    if(!flag)hours++;
+                    if (!flag) hours++;
                 }
 
                 it("JSON format + 400 code + Message expected", (done) => {
@@ -231,19 +231,19 @@ describe("Secret key in header e in database", () => {
                 });
             })
             describe("Password assente", () => {
-                let captchaGenerator = new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW);
-                let token = jwt.sign({ cc_token: captchaGenerator.getToken() }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
+            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                 //Brute forcing captcha result
                 let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
                 while (!flag && hours < 12) {
                     minutes = 0;
                     while (!flag && minutes < 60) {
-                        flag = clockCAPTCHA.ClockCAPTCHAGenerator.verifyUserInput(captchaGenerator.getToken(), process.env.CLOCK_CAPTCHA_PSW, user_input);
-                        if(!flag)user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
-                        if(!flag)minutes++;
+                        flag = cc.ClockCAPTCHA.validateData({token: toSendData['token'], input: user_input}, process.env.CLOCK_CAPTCHA_PSW);
+                        if (!flag) user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
+                        if (!flag) minutes++;
                     }
-                    if(!flag)hours++;
+                    if (!flag) hours++;
                 }
 
                 it("JSON format + 400 code + Message expected", (done) => {
@@ -268,19 +268,19 @@ describe("Secret key in header e in database", () => {
 
             })
             describe("Email malformata", () => {
-                let captchaGenerator = new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW);
-                let token = jwt.sign({ cc_token: captchaGenerator.getToken() }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
+            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                 //Brute forcing captcha result
                 let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
                 while (!flag && hours < 12) {
                     minutes = 0;
                     while (!flag && minutes < 60) {
-                        flag = clockCAPTCHA.ClockCAPTCHAGenerator.verifyUserInput(captchaGenerator.getToken(), process.env.CLOCK_CAPTCHA_PSW, user_input);
-                        if(!flag)user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
-                        if(!flag)minutes++;
+                        flag = cc.ClockCAPTCHA.validateData({token: toSendData['token'], input: user_input}, process.env.CLOCK_CAPTCHA_PSW);
+                        if (!flag) user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
+                        if (!flag) minutes++;
                     }
-                    if(!flag)hours++;
+                    if (!flag) hours++;
                 }
 
                 it("JSON format + 400 code + Message expected", (done) => {
@@ -305,19 +305,19 @@ describe("Secret key in header e in database", () => {
                 });
             })
             describe("Password malformata", () => {
-                let captchaGenerator = new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW);
-                let token = jwt.sign({ cc_token: captchaGenerator.getToken() }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
+            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                 //Brute forcing captcha result
                 let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
                 while (!flag && hours < 12) {
                     minutes = 0;
                     while (!flag && minutes < 60) {
-                        flag = clockCAPTCHA.ClockCAPTCHAGenerator.verifyUserInput(captchaGenerator.getToken(), process.env.CLOCK_CAPTCHA_PSW, user_input);
-                        if(!flag)user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
-                        if(!flag)minutes++;
+                        flag = cc.ClockCAPTCHA.validateData({token: toSendData['token'], input: user_input}, process.env.CLOCK_CAPTCHA_PSW);
+                        if (!flag) user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
+                        if (!flag) minutes++;
                     }
-                    if(!flag)hours++;
+                    if (!flag) hours++;
                 }
 
                 it("JSON format + 400 code + Message expected", (done) => {
@@ -342,47 +342,47 @@ describe("Secret key in header e in database", () => {
                 });
             })
         });
-        describe("Dati di accesso corretti", ()=>{
-            let captchaGenerator = new clockCAPTCHA.ClockCAPTCHAGenerator(process.env.CLOCK_CAPTCHA_PSW);
-                let token = jwt.sign({ cc_token: captchaGenerator.getToken() }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+        describe("Dati di accesso corretti", () => {
+            let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
+            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
-                //Brute forcing captcha result
-                let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
-                while (!flag && hours < 12) {
-                    minutes = 0;
-                    while (!flag && minutes < 60) {
-                        flag = clockCAPTCHA.ClockCAPTCHAGenerator.verifyUserInput(captchaGenerator.getToken(), process.env.CLOCK_CAPTCHA_PSW, user_input);
-                        if(!flag)user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
-                        if(!flag)minutes++;
-                    }
-                    if(!flag)hours++;
+            //Brute forcing captcha result
+            let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
+            while (!flag && hours < 12) {
+                minutes = 0;
+                while (!flag && minutes < 60) {
+                    flag = cc.ClockCAPTCHA.validateData({token: toSendData['token'], input: user_input}, process.env.CLOCK_CAPTCHA_PSW);
+                    if (!flag) user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
+                    if (!flag) minutes++;
                 }
+                if (!flag) hours++;
+            }
 
-                it("JSON format + 200 code + Message expected + Token verification", (done) => {
-                    request(app)
-                        .post("/session")
-                        .send({
-                            cc_token: token,
-                            cc_input: user_input,
-                            email: "mario.rossi@gmmail.com",
-                            password: "Password1234"
-                        })
-                        .set('x-secret-key', 'LQbHd5h334ciuy7')
-                        .expect("Content-Type", /json/)
-                        .expect(200)
-                        .end((err, res) => {
-                            if (err) return done(err);
-                            expect(res.body.session_token).toEqual(expect.any(String));
-                            try{
-                                let jwtDecoded = jwt.verify(res.body.session_token, process.env.JWT_SECRET_KEY);
-                                expect(jwtDecoded.email).toEqual("mario.rossi@gmmail.com");
-                                expect(jwtDecoded.username).toEqual("BigMario");
-                            }catch(err){
-                                throw err;
-                            }
-                            return done();
-                        });
-                });
+            it("JSON format + 200 code + Message expected + Token verification", (done) => {
+                request(app)
+                    .post("/session")
+                    .send({
+                        cc_token: token,
+                        cc_input: user_input,
+                        email: "mario.rossi@gmmail.com",
+                        password: "Password1234"
+                    })
+                    .set('x-secret-key', 'LQbHd5h334ciuy7')
+                    .expect("Content-Type", /json/)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) return done(err);
+                        expect(res.body.session_token).toEqual(expect.any(String));
+                        try {
+                            let jwtDecoded = jwt.verify(res.body.session_token, process.env.JWT_SECRET_KEY);
+                            expect(jwtDecoded.email).toEqual("mario.rossi@gmmail.com");
+                            expect(jwtDecoded.username).toEqual("BigMario");
+                        } catch (err) {
+                            throw err;
+                        }
+                        return done();
+                    });
+            });
         })
     });
 });

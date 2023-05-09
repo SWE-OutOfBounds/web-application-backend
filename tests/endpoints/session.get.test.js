@@ -8,7 +8,7 @@ const app = require("../../app");
 const { JsonWebTokenError } = require("jsonwebtoken");
 
 
-describe("Session api", () => {
+describe("Session api get endpoint", () => {
 
     describe("Richiesta senza secret key in header", () => {
 

@@ -109,7 +109,7 @@ describe("ClockCAPTCHA get endpoint", () => {
                     if (err) return done(err);
                     expect(res.body).toEqual(
                         expect.objectContaining({
-                            canvas_content: expect.any(String),
+                            image: expect.any(String),
                             token: expect.any(String),
                         }),
                     );
