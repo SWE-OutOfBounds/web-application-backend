@@ -28,7 +28,7 @@ module.exports = {
             pool.query('SELECT * FROM users WHERE email = ?', [email], (error, results, fields) => {
                 if (error) {
                     console.error(error);
-                    res.status(500).send('Database error.');
+                    res.status(500).json({ details: "DATABASE_ERROR" });
                 } else if (results.length > 0) {
                     //Email è già in uso per un diverso account e restituisco un errore
 
