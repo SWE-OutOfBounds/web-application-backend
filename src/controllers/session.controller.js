@@ -3,6 +3,9 @@ const validator = require('validator');
 const toolbox = require('../utils/toolbox');
 const jwt = require('jsonwebtoken');
 
+// gestione sicurezza password
+const bcrypt = require('bcrypt');
+
 module.exports = {
     open: (req, res) => {
         const email = req.body.email;
@@ -10,24 +13,38 @@ module.exports = {
         
         
         if (email && password && email != "" && password != "" && validator.isEmail(email) && toolbox.passwordValidator(password)) {
-            //Controllo se l'username e la password sono presenti nel database
-            pool.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password], (error, results, fields) => {
+            //Controllo se l'utente è registrato verificando se l'email è presente nel database
+            pool.query('SELECT * FROM users WHERE email = ?', [email], (error, results) => {
                 if (error) {
                     console.error(error);
                     res.status(500).json({ details: "DATABASE_ERROR" });
                 } else if (results.length > 0) {
+                    //l'email è stata trovata nel DB, controllo che la password fornita sia corretta
+                    const hashPsw = results[0].password; 
+                    bcrypt.compare(password, hashPsw, function(err,result){
+                        if(err){
+                            console.error(err);
+                            res.status(400).json({ details: "INVALID_DATA" }); 
+                        }
+                        else if (result){
+                            //credenziali fornite sono corrette
+                            
+                            // Se l'utente è autenticato, genero un token di sessione
+                            const sessionData = {
+                            email: results[0].email,
+                            username: results[0].username
+                            }
 
-                    // Se l'utente è autenticato, genero un token di sessione
-                    const sessionData = {
-                        email: results[0].email,
-                        username: results[0].username
-                    }
+                            const token = jwt.sign(sessionData, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
 
-                    const token = jwt.sign(sessionData, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-
-                    res.status(200).json({ session_token: token });
+                            res.status(200).json({ session_token: token });
+                        } else {
+                            // password non corretta restituisco l'errore generico
+                            res.status(401).json({ details: 'BAD_CREDENTIAL' });
+                            }
+                    })
                 } else {
-                    // Se l'utente non è registrato, restituisco un errore
+                    // Se l'utente non è registrato, restituisco l'errore generico
                     res.status(401).json({ details: 'BAD_CREDENTIAL' });
                 }
             });

@@ -21,5 +21,5 @@ CREATE TABLE blackList(
     used DATETIME NOT NULL
 );
 
-INSERT INTO users(email, username, firstname, lastname, password) VALUES('mario.rossi@gmmail.com', 'BigMario', 'Mario', 'Rossi', 'Password1234');
+INSERT INTO users(email, username, firstname, lastname, password) VALUES('mario.rossi@gmmail.com', 'BigMario', 'Mario', 'Rossi', '$2b$10$8vF0Woa6QogcWhZa48Q0Au7uxAYeCD1Y/hzP/5WV34xjLEws6vEgG');
 INSERT INTO apikeys(secretkey, host, appName) VALUES('LQbHd5h334ciuy7', 'http://localhost/', 'ClockCATPCHA-Tester');
