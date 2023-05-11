@@ -1,6 +1,13 @@
 openapi: 3.0.3
 info:
   title: Backend for Test application
+  description: |
+    Per il testing si può utilizzare la seguente api-key : `LQbHd5h334ciuy7` <br>
+    Per il servizio i captcha si possono utilizzare i numerevoli servizi di conversione da base64 a immagine, qualche esempio
+    * <a href="https://base64.guru/converter/decode/image">Base64Guru</a>
+    * <a href="https://codebeautify.org/base64-to-image-converter">Code Beautify</a>
+    
+    È richiesto un database mysql nel dispositivo in test. Script per l'inizializzazione del database disponibile <a href="https://github.com/SWE-OutOfBounds/web-application-backend/blob/dev/DBINIT.sql">qui</a>
   contact:
     name: OutOfBounds Dev Team  (email)
     email: sweoutofbounds@gmail.com
