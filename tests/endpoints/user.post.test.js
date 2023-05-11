@@ -126,7 +126,7 @@ describe("User post endpoint", () => {
             
             describe("Token scaduto", () => {
                 let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-                let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '1' });
+                let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '1' });
                 it("JSON format", (done) => {
                     request(app)
                         .post("/users")
@@ -177,7 +177,7 @@ describe("User post endpoint", () => {
             })
             describe("Captcha errato", () => {
                 let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-                let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                 let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
                 it("JSON format + 400 code + Message expected", (done) => {
@@ -204,7 +204,7 @@ describe("User post endpoint", () => {
             describe("Dati assenti", () => {
                 describe("Nome assente", () => {
                     let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-                    let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                    let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                     //Brute forcing captcha result
                     let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
@@ -242,7 +242,7 @@ describe("User post endpoint", () => {
                 })
                 describe("Cognome assente", () => {
                     let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-                    let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                    let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                     //Brute forcing captcha result
                     let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
@@ -280,7 +280,7 @@ describe("User post endpoint", () => {
                 })
                 describe("Nome utente assente", () => {
                     let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-                    let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                    let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                     //Brute forcing captcha result
                     let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
@@ -318,7 +318,7 @@ describe("User post endpoint", () => {
                 })
                 describe("Email assente", () => {
                     let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-                    let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                    let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                     //Brute forcing captcha result
                     let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
@@ -356,7 +356,7 @@ describe("User post endpoint", () => {
                 })
                 describe("Password assente", () => {
                     let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-                    let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                    let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                     //Brute forcing captcha result
                     let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
@@ -396,7 +396,7 @@ describe("User post endpoint", () => {
             describe("Dati inconsistenti", () => {
                 describe("Email non ben formattata", () => {
                     let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-                    let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                    let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                     //Brute forcing captcha result
                     let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
@@ -435,7 +435,7 @@ describe("User post endpoint", () => {
                 })
                 describe("Password non ben formattata", () => {
                     let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-                    let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                    let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                     //Brute forcing captcha result
                     let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
@@ -476,7 +476,7 @@ describe("User post endpoint", () => {
             describe("Dati consistenti", () => {
                 describe("Email già collegata ad un database", () => {
                     let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-                    let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                    let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                     //Brute forcing captcha result
                     let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
@@ -515,7 +515,7 @@ describe("User post endpoint", () => {
                 })
                 describe.skip("Email non collegata a nessun database", () => {
                     let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-                    let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+                    let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                     //Brute forcing captcha result
                     let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;

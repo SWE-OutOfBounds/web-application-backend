@@ -117,7 +117,7 @@ describe("Secret key in header e in database", () => {
     describe("ClockCAPTCHA: dati incorretti", () => {
         describe("Token scaduto", () => {
             let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '1' });
+            let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '1' });
             it("JSON format", (done) => {
                 request(app)
                     .post("/session")
@@ -168,7 +168,7 @@ describe("Secret key in header e in database", () => {
         })
         describe("Captcha errato", () => {
             let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+            let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
             //Brute forcing captcha result
             let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString()));
@@ -197,7 +197,7 @@ describe("Secret key in header e in database", () => {
         describe("Dati di accesso incoretti", () => {
             describe("Email assente", () => {
                 let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+            let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                 //Brute forcing captcha result
                 let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
@@ -232,7 +232,7 @@ describe("Secret key in header e in database", () => {
             })
             describe("Password assente", () => {
                 let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+            let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                 //Brute forcing captcha result
                 let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
@@ -269,7 +269,7 @@ describe("Secret key in header e in database", () => {
             })
             describe("Email malformata", () => {
                 let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+            let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                 //Brute forcing captcha result
                 let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
@@ -306,7 +306,7 @@ describe("Secret key in header e in database", () => {
             })
             describe("Password malformata", () => {
                 let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+            let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
                 //Brute forcing captcha result
                 let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;
@@ -344,7 +344,7 @@ describe("Secret key in header e in database", () => {
         });
         describe("Dati di accesso corretti", () => {
             let toSendData = cc.ClockCAPTCHA.generateData(process.env.CLOCK_CAPTCHA_PSW, new cc.ClockImageGenerator(new cc.HTMLCanvasGenerator()));
-            let token = jwt.sign({ cc_token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
+            let token = jwt.sign({ token: toSendData.token }, process.env.JWT_SECRET_KEY, { expiresIn: '30s' });
 
             //Brute forcing captcha result
             let hours = 0, minutes = 0, user_input = ((hours < 10 ? "0" + hours.toString() : hours.toString()) + ':' + (minutes < 10 ? "0" + minutes.toString() : minutes.toString())), flag = false;

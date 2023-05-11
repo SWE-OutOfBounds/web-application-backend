@@ -2,7 +2,8 @@ const pool = require('../configs/db.config');
 
 module.exports = {
     checkSecretKey: (req, res, next) => {
-        let secretKey = req.headers['x-secret-key']; // La secret key è passata nell'header della richiesta HTTP
+        // Ottengo la secret key dall'header della richiesta HTTP
+        let secretKey = req.headers['x-secret-key'];
 
         if (secretKey) {
             // Eseguo una query per verificare se la secret key è presente nel database

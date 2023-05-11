@@ -9,6 +9,7 @@ const saltRounds = 10;
 
 module.exports = {
     create: (req, res) => {
+        // Ottenimento dei dati forniti dall'utente dalla richiesta
         const firstName = req.body.firstName;
         const lastName = req.body.lastName;
         const username = req.body.username;
@@ -17,7 +18,7 @@ module.exports = {
 
         //Controllo i dati forniti dall'utente e, se non sono corretti, invio un errore all'utente 
         if(!firstName || !lastName || !username || !email || !password){
-            //UPGRADABLE : Indicate missing data's names on res.body.details
+            //UPGRADE : Indicare nel messaggio di risposta quale campo dati è assente.
             res.status(400).json({ details: 'MISSING_DATA' });
         }else if (firstName == "" || lastName == "" || username == "" || !validator.isEmail(email) || !toolbox.passwordValidator(password)) {
             //Formato dati non corretto
@@ -37,7 +38,6 @@ module.exports = {
                     res.status(400).json({details:'USED_EMAIL'});
                 } else {
                     //Email libera: creo l'hash della password e inserisco i dati nel database
-
                     bcrypt.genSalt(saltRounds, function(err, salt){
                         bcrypt.hash(password, salt, function(err, hash){              
                             pool.query('INSERT INTO users(email, username, firstname, lastname, password) VALUES(?, ?, ?, ?, ?)', [email, username, firstName, lastName, hash], (error, results, fields) => {
