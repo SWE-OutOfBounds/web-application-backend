@@ -6,7 +6,7 @@ info:
     Per il servizio i captcha si possono utilizzare i numerevoli servizi di conversione da base64 a immagine, qualche esempio
     * <a href="https://base64.guru/converter/decode/image">Base64Guru</a>
     * <a href="https://codebeautify.org/base64-to-image-converter">Code Beautify</a>
-    
+
     È richiesto un database mysql nel dispositivo in test. Script per l'inizializzazione del database disponibile <a href="https://github.com/SWE-OutOfBounds/web-application-backend/blob/dev/DBINIT.sql">qui</a>
   contact:
     name: OutOfBounds Dev Team  (email)
@@ -30,56 +30,56 @@ paths:
         - Users
       summary: Registrazione utente
       description: Registrazione di un nuovo utente nel database compreso di verifica CAPTCHA
-      
+
       parameters:
         - in: header
           name: x-secret-key
           schema:
             type: string
           required: true
-          
+
       requestBody:
-        $ref: '#/components/requestBodies/Registrazione'
-      
+        $ref: "#/components/requestBodies/Registrazione"
+
       responses:
-        '201':
+        "201":
           description: Utente creato con successo
-        '400':
+        "400":
           description: I dati della richiesta sono stati inviati in un formato non valido
           content:
             application/json:
               schema:
                 properties:
-                  details: 
+                  details:
                     type: "string"
                     description: |
-                        * `USED_TOKEN` - cc_token già utilizzato in prcedenza, richiederne uno nuovo con GET \clock-captcha.
-                        * `BAD_CAPTCHA` - cc_input non valido per il cc_token inviato.
-                        * `INVALID_<FIELDNAME>_FORMAT` - Formato di FIELDNAME non valido.
-                        * `USED_EMAIL` - Email già presente nel database degli utenti.
-        '403':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/DatabaseError'
-    
+                      * `USED_TOKEN` - cc_token già utilizzato in prcedenza, richiederne uno nuovo con GET \clock-captcha.
+                      * `BAD_CAPTCHA` - cc_input non valido per il cc_token inviato.
+                      * `INVALID_<FIELDNAME>_FORMAT` - Formato di FIELDNAME non valido.
+                      * `USED_EMAIL` - Email già presente nel database degli utenti.
+        "403":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/DatabaseError"
+
   /session:
     get:
       tags:
         - Session
-      summary : Recupera i dati di sessione
+      summary: Recupera i dati di sessione
       description: Recupera tutti i dati utili per la sessione in corso
-      
+
       parameters:
         - in: header
           name: x-secret-key
           schema:
             type: string
           required: true
-      
+
       responses:
-        '200':
+        "200":
           description: Token di sessione valido, dati nella risposta
           content:
             application/json:
@@ -91,121 +91,119 @@ paths:
                   username:
                     type: "string"
                     description: Username dell'account
-        '400':
+        "400":
           description: I dati della richiesta sono stati inviati in un formato non valido
           content:
             application/json:
               schema:
                 properties:
-                  details: 
+                  details:
                     type: "string"
                     description: |
-                        * `INVALID_TOKEN` - Token di sessione presente ma non riconosciuto.
-                        * `EXPIRED_TOKEN` - Token di sessione scaduto.
-        '404': 
-          $ref: '#/components/responses/NotFound'
-        '403':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/DatabaseError'
-    
+                      * `INVALID_TOKEN` - Token di sessione presente ma non riconosciuto.
+                      * `EXPIRED_TOKEN` - Token di sessione scaduto.
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "403":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/DatabaseError"
+
     post:
-      tags: 
+      tags:
         - Session
       summary: Richiesta di apertura di una sessione
       description: Richiede i dati di un utente e l'apertura di una sessione con controllo CAPTCHA
-      
+
       parameters:
         - in: header
           name: x-secret-key
           schema:
             type: string
           required: true
-      
+
       requestBody:
-        $ref: '#/components/requestBodies/Login'
-        
+        $ref: "#/components/requestBodies/Login"
+
       responses:
-        '200':
+        "200":
           description: Authenticazione eseguita, token di sessione nella risposta
-          content:  
+          content:
             application/json:
               schema:
                 properties:
-                  session_token: 
+                  session_token:
                     type: "string"
                     example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJhYmNkMTIzIiwiZXhwaXJ5IjoxNjQ2NjM1NjExMzAxfQ.3Thp81rDFrKXr3WrY1MyMnNK8kKoZBX9lg-JwFznR-M
-        '400':
+        "400":
           description: I dati della richiesta sono stati inviati in un formato non valido
           content:
             application/json:
               schema:
                 properties:
-                  details: 
+                  details:
                     type: "string"
                     description: |
-                        * `INVALID_EMAIL_FORMAT` - Formato campo email non valido.
-                        * `INVALID_PASSWORD_FORMAT` - Formato campo password non valido.
-        '401':
+                      * `INVALID_EMAIL_FORMAT` - Formato campo email non valido.
+                      * `INVALID_PASSWORD_FORMAT` - Formato campo password non valido.
+        "401":
           description: Credenziali inviate nella richiesta errate
           content:
             application/json:
               schema:
-               properties:
-                details:
-                  type: string
-                  default: BAD_CREDENTIAL
-        '403':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/DatabaseError'
- 
+                properties:
+                  details:
+                    type: string
+                    default: BAD_CREDENTIAL
+        "403":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/DatabaseError"
+
   /clock-captcha:
     get:
       tags:
         - Clock-Captcha
-      summary : Recupera i dati di sessione
+      summary: Recupera i dati di sessione
       description: Recupera tutti i dati utili per la sessione in corso
-      
+
       parameters:
         - in: header
           name: x-secret-key
           schema:
             type: string
           required: true
-      
+
       responses:
-        '200':
+        "200":
           description: Richiesta valida dati nel corpo della risposta
           content:
             application/json:
               schema:
                 properties:
-                  image: 
+                  image:
                     type: "string"
-                    description: | 
+                    description: |
                       Immagine che rappresenta i dati contenuti in `token`
                   token:
                     type: "string"
                     description: Token contentente dati per clock-CAPTCHA
-        '403':
-          $ref: '#/components/responses/Unauthorized'
-      
+        "403":
+          $ref: "#/components/responses/Unauthorized"
+
 components:
-  
   responses:
-  
     Unauthorized:
       description: Viene ricevuta una richiesta con api key non riconosciuta o assente
       content:
         application/json:
           schema:
-           properties:
-            details:
-              type: string
-              description: |
-                    * `INVALID_API_KEY` - Api key in header non riconosciuta.
-                    * `API_KEY_REQUIRED` - Api key mancante nell'header della richiesta.
+            properties:
+              details:
+                type: string
+                description: |
+                  * `INVALID_API_KEY` - Api key in header non riconosciuta.
+                  * `API_KEY_REQUIRED` - Api key mancante nell'header della richiesta.
     DatabaseError:
       description: Viene riscontrato un problema durante la connessione col database
       content:
@@ -214,12 +212,12 @@ components:
             properties:
               details:
                 type: string
-                description:  |
-                    * `DATABASE_ERROR` - Errore nella comunicazione col database.
+                description: |
+                  * `DATABASE_ERROR` - Errore nella comunicazione col database.
                 default: DATABASE_ERROR
     NotFound:
       description: I dati della richista sono parzialmente o totalmente mancanti
-      content: 
+      content:
         application/json:
           schema:
             properties:
@@ -228,12 +226,12 @@ components:
                 description: |
                   * `MISSING_DATA` - Dati di clock-captcha mancanti.
                   * `MISSING_COOKIE` - Cookie con token di sessione mancante.
-  
+
   requestBodies:
     Registrazione:
       description: Tutti i dati necessari alla registrazione
       required: true
-      content: 
+      content:
         application/json:
           schema:
             properties:
@@ -250,7 +248,7 @@ components:
               lastName:
                 type: string
                 example: Rossi
-              email: 
+              email:
                 type: string
                 example: "mario.rossi@gmmail.com"
                 format: Email
@@ -260,7 +258,7 @@ components:
               password:
                 type: string
                 example: Password1234
-  
+
     Login:
       description: Dati necessari all'autenticazione di un utente
       required: true
@@ -275,12 +273,10 @@ components:
               cc_input:
                 type: string
                 example: 11:10
-              email: 
+              email:
                 type: string
                 example: "mario.rossi@gmmail.com"
                 format: Email
               password:
                 type: string
                 example: Password1234
-                
-                
