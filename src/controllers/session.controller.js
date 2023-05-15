@@ -48,10 +48,10 @@ module.exports = {
                 const token = jwt.sign(
                   sessionData,
                   process.env.JWT_SECRET_KEY,
-                  { expiresIn: "1h" }
+                  { expiresIn: "1h" } // 1h = 3600 sec
                 );
 
-                res.status(200).json({ session_token: token });
+                res.status(200).json({ username: results[0].username, session_token: token, expiredIn: 3600 });
               } else {
                 // Password non corretta, restituisco l'errore generico
                 res.status(401).json({ details: "BAD_CREDENTIAL" });

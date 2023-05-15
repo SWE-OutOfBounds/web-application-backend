@@ -62,7 +62,7 @@ module.exports = {
                     } else {
                       //Utente inserito nel database
                       //res.sendStatus(201);
-                      res.status(201).json("created");
+                      res.status(201).json({ details: "CREATED" });
                     }
                   }
                 );
