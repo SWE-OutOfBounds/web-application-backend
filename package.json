@@ -36,11 +36,5 @@
     "swagger-autogen": "^2.23.1",
     "validator": "^13.9.0",
     "webserver": "^5.0.1"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "coveragePathIgnorePatterns": [
-      "node_modules/"
-    ]
   }
 }
