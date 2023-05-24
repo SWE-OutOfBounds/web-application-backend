@@ -26,7 +26,7 @@ module.exports = {
     // Creazione del payload di risposta che contiene il token firmato e l'immagine del CAPTCHA
     var resPayload = {
       token: jwt.sign({ token: cc_data.token }, process.env.JWT_SECRET_KEY, {
-        expiresIn: "120s",
+        expiresIn: "90s",
       }), // Firma del token utilizzando la chiave segreta JWT
       image: cc_data.image, // Immagine del CAPTCHA generata
     };
