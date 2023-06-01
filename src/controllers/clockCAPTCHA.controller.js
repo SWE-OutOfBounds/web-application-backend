@@ -1,7 +1,5 @@
 const cc = require("../../../clock-captcha/dist/index");
 const jwt = require("jsonwebtoken");
-const pool = require("../configs/db.config");
-
 module.exports = {
   generate: (req, res) => {
     // Creazione dell'oggetto generationStrategy per generare l'immagine del CAPTCHA

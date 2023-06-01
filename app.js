@@ -18,8 +18,8 @@ app.use(express.json());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(keyCheckMiddleware.checkSecretKey);
 
-app.use("/users", require("./src/routes/user"));
-app.use("/session", require("./src/routes/session"));
-app.use("/clock-captcha", require("./src/routes/clockCAPTCHA"));
+app.use("/users", require("./src/routes/user.router"));
+app.use("/session", require("./src/routes/session.router"));
+app.use("/clock-captcha", require("./src/routes/clockCAPTCHA.router"));
 
 module.exports = app;

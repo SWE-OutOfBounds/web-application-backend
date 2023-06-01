@@ -1,13 +1,11 @@
-const pool = require("../configs/db.config");
 const validator = require("validator");
 const toolbox = require("../utils/toolbox");
 const jwt = require("jsonwebtoken");
 
-// gestione sicurezza password
-const bcrypt = require("bcrypt");
+const userService = require("../services/user.service");
 
 module.exports = {
-  open: (req, res) => {
+  open: async (req, res) => {
     // Ottenimento dell'email e della password dalla richiesta
     const email = req.body.email;
     const password = req.body.password;
@@ -22,47 +20,54 @@ module.exports = {
       toolbox.passwordValidator(password)
     ) {
       //Controllo se l'utente è registrato verificando se l'email è presente nel database
-      pool.query(
-        "SELECT * FROM users WHERE email = ?",
-        [email],
-        (error, results) => {
-          if (error) {
-            console.error(error);
-            res.status(500).json({ details: "DATABASE_ERROR" });
-          } else if (results.length > 0) {
-            //l'email è stata trovata nel DB, controllo che la password fornita sia corretta
-            const hashPsw = results[0].password;
-            bcrypt.compare(password, hashPsw, function (err, result) {
-              if (err) {
-                console.error(err);
-                res.status(400).json({ details: "INVALID_DATA" });
-              } else if (result) {
-                // Le credenziali fornite sono corrette
+      // pool.query(
+      //   "SELECT * FROM users WHERE email = ?",
+      //   [email],
+      //   (error, results) => {
+      //     if (error) {
+      //       console.error(error);
+      //       res.status(500).json({ details: "DATABASE_ERROR" });
+      //     } else
+      const authResult = await userService.authenticate(email, password);
+      switch (authResult) {
+        case "DATABASE_ERROR":
+          res.status(500).json({ details: "DATABASE_ERROR" });
+          break;
 
-                // Genero un token di sessione
-                const sessionData = {
-                  email: results[0].email,
-                  username: results[0].username,
-                };
+        case "EMAIL_NOT_FOUND":
+        case "BAD_CREDENTIAL":
+          res.status(401).json({ details: "BAD_CREDENTIAL" });
+          break;
 
-                const token = jwt.sign(
-                  sessionData,
-                  process.env.JWT_SECRET_KEY,
-                  { expiresIn: "1h" } // 1h = 3600 sec
-                );
+        case "OKAY":
+          const username = await userService.getUsernameByEmail(email);
+          // Genero un token di sessione
+          const sessionData = {
+            email: email,
+            username: username,
+          };
 
-                res.status(200).json({ username: results[0].username, session_token: token, expiredIn: 3600 });
-              } else {
-                // Password non corretta, restituisco l'errore generico
-                res.status(401).json({ details: "BAD_CREDENTIAL" });
-              }
-            });
-          } else {
-            // Se l'utente non è registrato, restituisco l'errore generico
-            res.status(401).json({ details: "BAD_CREDENTIAL" });
-          }
-        }
-      );
+          const token = jwt.sign(
+            sessionData,
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: "1h" } // 1h = 3600 sec
+          );
+
+          res.status(200).json({
+            username: username,
+            session_token: token,
+            expiredIn: 3600,
+          });
+          break;
+
+        case "INVALID_DATA":
+          res.status(400).json({ details: "INVALID_DATA" });
+          break;
+
+        default:
+          res.status(500).json({ details: "GENERIC_ERROR" });
+          break;
+      }
     } else {
       // Se l'email non è presente o non è nel formato corretto
       if (!email || !validator.isEmail(email)) {

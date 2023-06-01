@@ -1,13 +1,10 @@
 const validator = require("validator");
 const toolbox = require("../utils/toolbox");
-const pool = require("../configs/db.config");
 
-//gestione sicurezza password
-const bcrypt = require("bcrypt");
-const saltRounds = 10;
+const userService = require("../services/user.service");
 
 module.exports = {
-  create: (req, res) => {
+  create: async (req, res) => {
     // Ottenimento dei dati forniti dall'utente dalla richiesta
     const firstName = req.body.firstName;
     const lastName = req.body.lastName;
@@ -38,39 +35,24 @@ module.exports = {
       else res.status(400).json({ details: "INVALID_PASSWORD_FORMAT" });
     } else {
       //Formato dati corretto per cui verifico se l'email è già in uso
-      pool.query(
-        "SELECT * FROM users WHERE email = ?",
-        [email],
-        (error, results, fields) => {
-          if (error) {
-            console.error(error);
-            res.status(500).json({ details: "DATABASE_ERROR" });
-          } else if (results.length > 0) {
-            //Email è già in uso per un diverso account e restituisco un errore
-            res.status(400).json({ details: "USED_EMAIL" });
-          } else {
-            //Email libera: creo l'hash della password e inserisco i dati nel database
-            bcrypt.genSalt(saltRounds, function (err, salt) {
-              bcrypt.hash(password, salt, function (err, hash) {
-                pool.query(
-                  "INSERT INTO users(email, username, firstname, lastname, password) VALUES(?, ?, ?, ?, ?)",
-                  [email, username, firstName, lastName, hash],
-                  (error, results, fields) => {
-                    if (error) {
-                      console.error(error);
-                      res.status(500).json({ details: "DATABASE_ERROR" });
-                    } else {
-                      //Utente inserito nel database
-                      //res.sendStatus(201);
-                      res.status(201).json({ details: "CREATED" });
-                    }
-                  }
-                );
-              });
-            });
-          }
+      const freeEmail = await userService.searchForEmail(email);
+      console.log(freeEmail);
+      if (freeEmail) {
+        const insertResult = await userService.userInsert(
+          email,
+          username,
+          firstName,
+          lastName,
+          password
+        );
+        if (insertResult) {
+          res.status(201).json({ details: "CREATED" });
+        } else {
+          res.status(500).json({ details: "DATABASE_ERROR" });
         }
-      );
+      } else {
+        res.status(400).json({ details: "USED_EMAIL" });
+      }
     }
   },
 };
